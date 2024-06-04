@@ -1,6 +1,6 @@
 /// <summary>
-/// @author Peter Lowe
-/// @date May 2019
+/// @author Ian Perez Bunuel
+/// @date 04/06/2024
 ///
 /// you need to change the above lines or lose marks
 /// </summary>
@@ -17,7 +17,7 @@
 /// load and setup thne image
 /// </summary>
 Game::Game() :
-	m_window{ sf::VideoMode{ 800U, 600U, 32U }, "SFML Game" },
+	m_window{ sf::VideoMode{ SCREEN_SIZE, SCREEN_SIZE, 32U }, "SFML Game" },
 	m_exitGame{false} //when true game will exit
 {
 	setupFontAndText(); // load font 
@@ -91,6 +91,14 @@ void Game::processKeys(sf::Event t_event)
 	{
 		m_exitGame = true;
 	}
+
+	if (sf::Keyboard::Space == t_event.key.code)
+	{
+		for (int i = 0; i < POLYGON_AMOUNT; i++)
+		{
+			polygon[i].makePolygon(5, 100);
+		}
+	}
 }
 
 /// <summary>
@@ -103,6 +111,25 @@ void Game::update(sf::Time t_deltaTime)
 	{
 		m_window.close();
 	}
+
+	polygon[0].checkDirection();
+	polygon[0].rotate();
+
+	for (int i = 0; i < POLYGON_AMOUNT; i++)
+	{
+		for (int c = 0; c < POLYGON_AMOUNT; c++)
+		{
+			if (c != i)
+			{
+				colliding = polygon[i].SATPolygonCollision(polygon[i].getBody(), polygon[c].getBody());
+			}
+		}
+	}
+
+	if (colliding)
+	{
+		std::cout << "COLLIDING" << "\n";
+	}
 }
 
 /// <summary>
@@ -110,9 +137,13 @@ void Game::update(sf::Time t_deltaTime)
 /// </summary>
 void Game::render()
 {
-	m_window.clear(sf::Color::White);
-	m_window.draw(m_welcomeMessage);
-	m_window.draw(m_logoSprite);
+	m_window.clear(sf::Color::Black);
+	
+	for (int i = 0; i < POLYGON_AMOUNT; i++)
+	{
+		m_window.draw(polygon[i].getBody());
+	}
+
 	m_window.display();
 }
 
@@ -121,18 +152,7 @@ void Game::render()
 /// </summary>
 void Game::setupFontAndText()
 {
-	if (!m_ArialBlackfont.loadFromFile("ASSETS\\FONTS\\ariblk.ttf"))
-	{
-		std::cout << "problem loading arial black font" << std::endl;
-	}
-	m_welcomeMessage.setFont(m_ArialBlackfont);
-	m_welcomeMessage.setString("SFML Game");
-	m_welcomeMessage.setStyle(sf::Text::Underlined | sf::Text::Italic | sf::Text::Bold);
-	m_welcomeMessage.setPosition(40.0f, 40.0f);
-	m_welcomeMessage.setCharacterSize(80U);
-	m_welcomeMessage.setOutlineColor(sf::Color::Red);
-	m_welcomeMessage.setFillColor(sf::Color::Black);
-	m_welcomeMessage.setOutlineThickness(3.0f);
+	
 
 }
 
@@ -141,11 +161,5 @@ void Game::setupFontAndText()
 /// </summary>
 void Game::setupSprite()
 {
-	if (!m_logoTexture.loadFromFile("ASSETS\\IMAGES\\SFML-LOGO.png"))
-	{
-		// simple error message if previous call fails
-		std::cout << "problem loading logo" << std::endl;
-	}
-	m_logoSprite.setTexture(m_logoTexture);
-	m_logoSprite.setPosition(300.0f, 180.0f);
+	
 }
